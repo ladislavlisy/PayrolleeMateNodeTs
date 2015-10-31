@@ -3,6 +3,7 @@
  */
 ///<reference path='../../typings/mocha/mocha.d.ts'/>
 ///<reference path='../../typings/should/should.d.ts'/>
+///<reference path='../../typings/lodash/lodash.d.ts'/>
 
 require('should');
 var _ = require('lodash');
@@ -12,13 +13,13 @@ describe('SpanOfYears', () => {
 
     it('Should_Return_IntervalName_2013', () => {
         var testInterval = new ns.Periods.SpanOfYears(2013, 2013);
-        var testName: String = testInterval.ClassName();
+        var testName: String = testInterval.className();
         true.should.equal("2013" == testName);
     });
 
     it('Should_Return_IntervalName_2011to2013', () => {
         var testInterval = new ns.Periods.SpanOfYears(2011, 2013);
-        var testName: String = testInterval.ClassName();
+        var testName: String = testInterval.className();
         true.should.equal("2011to2013" == testName);
     });
 
@@ -31,7 +32,7 @@ describe('SpanOfYears', () => {
             new ns.Periods.SpanOfYears(2014, 2015),
             new ns.Periods.SpanOfYears(2016, 2016),
             new ns.Periods.SpanOfYears(2017, 2099)];
-        var testIntervalArray = testYearArray.ToYearsIntervalList();
+        var testIntervalArray = testYearArray.YearsIntervalList();
         var expsIntervalStrings = _.map(expsIntervalArray, (x) => x.toString());
         var testIntervalStrings = _.map(testIntervalArray, (x) => x.toString());
         var diffIntervalArray = _.difference(expsIntervalStrings, testIntervalStrings);

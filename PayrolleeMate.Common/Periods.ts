@@ -4,14 +4,14 @@
 ///<reference path='../typings/datejs/datejs.d.ts'/>
 ///<reference path="../typings/lodash/lodash.d.ts" />
 
-var _ = require('lodash');
+var _: _.LoDashStatic = require('lodash');
 var d = require('datejs');
 
 //export module Periods {
 export class MonthPeriod {
     static PRESENT = 0;
 
-    public static DayOfWeekMonToSun(periodDateCwd:number) {
+    public static DayOfWeekMonToSun(periodDateCwd:number):number {
         // DayOfWeek Sunday = 0
         // Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6
         if (periodDateCwd == 0) {
@@ -22,19 +22,19 @@ export class MonthPeriod {
         }
     }
 
-    public static CreateFromYearAndMonth(year:number, month:number) {
+    public static CreateFromYearAndMonth(year:number, month:number): MonthPeriod {
         return new MonthPeriod(100 * year + month);
     }
 
-    public static Empty() {
+    public static Empty(): MonthPeriod {
         return new MonthPeriod(MonthPeriod.PRESENT);
     }
 
-    public static BeginOfYear(year:number) {
+    public static BeginOfYear(year:number): MonthPeriod {
         return new MonthPeriod(100 * year + 1);
     }
 
-    public static EndOfYear(year:number) {
+    public static EndOfYear(year:number): MonthPeriod {
         return new MonthPeriod(100 * year + 12);
     }
 
@@ -44,57 +44,60 @@ export class MonthPeriod {
         this.code = code;
     }
 
-    Code() {
+    Code(): number {
         return this.code;
     }
 
-    Year() {
+    Year(): number {
         return (this.code / 100) >> 0;
     }
 
-    Month() {
+    Month(): number {
         return (this.code % 100);
     }
 
-    YearInt() {
+    YearInt(): number {
         return (this.code / 100) >> 0;
     }
 
-    MonthInt() {
+    MonthInt(): number {
         return (this.code % 100);
     }
 
-    CreateDate(day:number) {
-        return Date.today()
-            .set({ day: day, year: this.YearInt(), month: this.MonthInt()-1,
-                hour: 0, minute: 0, second: 0, millisecond: 0 });
+    CreateDate(day:number):IDateJS {
+        //var periodDate = Date.today();
+        //periodDate.set({ day: day, year: this.YearInt(), month: this.MonthInt()-1,
+        //    hour: 0, minute: 0, second: 0, millisecond: 0 });
+
+        var periodDate = Date.parse(`${this.MonthInt()}/1/${this.YearInt()}`);
+        return periodDate;
     }
 
-    MonthOrder() {
+    MonthOrder(): number {
         return Math.max(0, this.YearInt() - 2000) * 12 + this.MonthInt();
     }
 
-    DaysInMonth() {
+    DaysInMonth(): number {
         return Date.getDaysInMonth(this.YearInt(), this.MonthInt() - 1);
     }
 
-    BeginOfMonth() {
+    BeginOfMonth():IDateJS {
         var periodDate = this.CreateDate(1);
         return periodDate;
     }
 
-    EndOfMonth() {
+    EndOfMonth():IDateJS {
         var periodDate = this.CreateDate(this.DaysInMonth());
         return periodDate;
     }
 
-    DateOfMonth(dayOrdinal:number) {
+    DateOfMonth(dayOrdinal:number):IDateJS {
         var periodDay = Math.min(Math.max(1, dayOrdinal), this.DaysInMonth());
         var periodDate = this.CreateDate(periodDay);
         return periodDate;
     }
 
-    WeekDayOfMonth(dayOrdinal:number) {
+    WeekDayOfMonth(dayOrdinal:number): number {
         var periodDate = this.DateOfMonth(dayOrdinal);
 
         var periodDateCwd = periodDate.getDay();
@@ -102,12 +105,12 @@ export class MonthPeriod {
         return MonthPeriod.DayOfWeekMonToSun(periodDateCwd);
     }
 
-    Description() {
+    Description(): string {
         var firstPeriodDay = this.BeginOfMonth();
         return firstPeriodDay.toString("MMMM yyyy"); //("MMMM yyyy");
     }
 
-    compareToPeriod(other:MonthPeriod) {
+    compareToPeriod(other:MonthPeriod): number {
         if (this.Code() == other.Code()) {
             return 0;
         }
@@ -116,29 +119,29 @@ export class MonthPeriod {
         }
     }
 
-    isEqualToPeriod(other:MonthPeriod) {
+    isEqualToPeriod(other:MonthPeriod): boolean {
         return (this.compareToPeriod(other) == 0);
     }
 
-    isGreaterToPeriod(other:MonthPeriod) {
+    isGreaterToPeriod(other:MonthPeriod): boolean {
         return (this.compareToPeriod(other) > 0);
     }
 
-    isLessToPeriod(other:MonthPeriod) {
+    isLessToPeriod(other:MonthPeriod): boolean {
         return (this.compareToPeriod(other) < 0);
     }
 
-    toString() {
+    toString(): string {
         return this.Code.toString();
     }
 }
 
 export class SpanOfMonths {
-    public static CreateFromYear(year:number) {
+    public static CreateFromYear(year:number):SpanOfMonths {
         return new SpanOfMonths(MonthPeriod.BeginOfYear(year), MonthPeriod.EndOfYear(year));
     }
 
-    public static CreateFromMonth(period:MonthPeriod) {
+    public static CreateFromMonth(period:MonthPeriod):SpanOfMonths {
         return new SpanOfMonths(period, period);
     }
 
@@ -152,16 +155,16 @@ export class SpanOfMonths {
         this.periodUpto = upto;
     }
 
-    PeriodFrom() {
+    PeriodFrom(): MonthPeriod {
         return this.periodFrom;
     }
 
-    PeriodUpto() {
+    PeriodUpto(): MonthPeriod {
         return this.periodUpto;
     }
 
-    compareToInterval(other:SpanOfMonths) {
-        if (this.periodFrom == other.periodFrom) {
+    compareToInterval(other:SpanOfMonths):number {
+        if (this.periodFrom.isEqualToPeriod(other.periodFrom)) {
             return (this.periodUpto.compareToPeriod(other.periodUpto));
         }
         else {
@@ -169,39 +172,43 @@ export class SpanOfMonths {
         }
     }
 
-    isEqualToInterval(other:SpanOfMonths) {
+    isEqualToInterval(other:SpanOfMonths): boolean {
         return (this.compareToInterval(other) == 0);
     }
 
-    isGreaterToInterval(other:SpanOfMonths) {
+    isGreaterToInterval(other:SpanOfMonths): boolean {
         return (this.compareToInterval(other) > 0);
     }
 
-    isLessToInterval(other:SpanOfMonths) {
+    isLessToInterval(other:SpanOfMonths): boolean {
         return (this.compareToInterval(other) < 0);
     }
 
-    ClassName() {
+    className():string {
         var className = this.periodFrom.toString();
 
-        if (this.periodFrom != this.periodUpto) {
+        if (!this.periodFrom.isEqualToPeriod(this.periodUpto)) {
             className += `to${this.periodUpto.toString()}`;
         }
         return className;
     }
 
-    toString() {
-        return this.ClassName();
+    toString():string {
+        return this.className();
     }
 }
 
 export class SpanOfYears {
-    public static CreateFromYear(year:number) {
+    public static CreateFromYear(year:number):SpanOfYears {
         return new SpanOfYears(year, year);
     }
 
-    public static CreateFromYearToYear(from:number, upto:number) {
+    public static CreateFromYearToYear(from:number, upto:number):SpanOfYears {
         return new SpanOfYears(from, upto);
+    }
+
+    public static Empty():SpanOfYears {
+        return new SpanOfYears(0, 0);
     }
 
     private yearFrom:number;
@@ -214,15 +221,15 @@ export class SpanOfYears {
         this.yearUpto = upto;
     }
 
-    YearFrom() {
+    YearFrom(): number {
         return this.yearFrom;
     }
 
-    YearUpto() {
+    YearUpto(): number {
         return this.yearUpto;
     }
 
-    compareToInterval(other:SpanOfYears) {
+    compareToInterval(other:SpanOfYears): number {
         if (this.yearFrom == other.yearFrom) {
             return (this.yearUpto - other.yearUpto);
         }
@@ -231,29 +238,30 @@ export class SpanOfYears {
         }
     }
 
-    isEqualToInterval(other:SpanOfYears) {
+    isEqualToInterval(other:SpanOfYears): boolean {
         return (this.compareToInterval(other) == 0);
     }
 
-    isGreaterToInterval(other:SpanOfYears) {
+    isGreaterToInterval(other:SpanOfYears): boolean {
         return (this.compareToInterval(other) > 0);
     }
 
-    isLessToInterval(other:SpanOfYears) {
+    isLessToInterval(other:SpanOfYears): boolean {
         return (this.compareToInterval(other) < 0);
     }
 
-    ClassName() {
-        var className = this.yearFrom.toString();
-
+    className(): string {
         if (this.yearFrom != this.yearUpto) {
-            className += `to${this.yearUpto.toString()}`;
+            return `${this.yearFrom}to${this.yearUpto}`;
         }
-        return className;
+        else
+        {
+            return `${this.yearFrom}`;
+        }
     }
 
-    toString() {
-        return this.ClassName();
+    toString(): string {
+        return this.className();
     }
 }
 
@@ -262,76 +270,37 @@ export class SeqOfYears {
     public static END_YEAR_ARRAY:number = 2100;
     public static END_YEAR_INTER:number = 2099;
 
-    static transformZeroYear(year:number):number {
+    static transformZeroToUpto(year:number):number {
         return (year == 0 ? SeqOfYears.END_YEAR_ARRAY : year);
     }
 
-    private milestones:Array<number>;
+    static transformYearsToSpans(yearFrom: number, yearUpto: number): SpanOfYears {
+        var tranUpto = SeqOfYears.transformZeroToUpto(yearUpto);
+        var spanUpto = (tranUpto == yearFrom ? tranUpto : tranUpto - 1);
+        return new SpanOfYears(yearFrom, spanUpto);
+    }
+
+    private milestones:Array<SpanOfYears>;
 
     constructor(years:Array<number>) {
-        this.milestones = _.sortBy(years, SeqOfYears.transformZeroYear);
+        var sortedYears = _.sortBy(years, SeqOfYears.transformZeroToUpto);
+        var beginsYears = _.dropRight(sortedYears, 1);
+        var finishYears = _.drop(sortedYears, 1);
+        var sortedZiped = _.zip(beginsYears, finishYears);
+        this.milestones = _.map(sortedZiped, (x) => SeqOfYears.transformYearsToSpans(_.first(x), _.last(x)));
+    }
+
+    static selectForPeriod(span: SpanOfYears, period: MonthPeriod):boolean {
+        return period.Year() >= span.YearFrom() && period.Year() <= span.YearUpto();
     }
 
     YearsIntervalForPeriod(period:MonthPeriod):SpanOfYears {
-        var forPeriodAccumulator = function (agr:SpanOfYears, x:number):SpanOfYears {
-            var intYear = (x == 0) ? SeqOfYears.END_YEAR_ARRAY : x;
-            var intFrom = (period.Year() >= intYear) ? intYear : agr.YearFrom();
-            var intUpto = (period.Year() < intYear && agr.YearUpto() == 0) ? (intYear - 1) : agr.YearUpto();
-
-            return new SpanOfYears(intFrom, intUpto);
-        };
-        var initsSpan:SpanOfYears = SpanOfYears.CreateFromYear(0);
-        var validSpan:SpanOfYears = _.reduce(this.milestones, forPeriodAccumulator, initsSpan);
-        return validSpan;
+        var validSpan = _.filter(this.milestones, (x) => SeqOfYears.selectForPeriod(x, period));
+        return _.first(validSpan) || SpanOfYears.Empty();
     }
 
-    ToYearsIntervalList() {
-        var nextListEnd = function(from: number, year: number): Array<SpanOfYears> {
-            if (year == 0) {
-                var upto = SeqOfYears.END_YEAR_INTER;
-
-                return [new SpanOfYears(from, upto)];
-            } else {
-                var upto = Math.max(year - 1, from);
-
-                return [new SpanOfYears(from, upto), new SpanOfYears(year, 0)];
-            }
-        };
-        var makeListEnd = function(preparedList: Array<SpanOfYears>): Array<SpanOfYears> {
-            var lastHistoryPart: SpanOfYears = _.last(preparedList);
-
-            if (lastHistoryPart.YearUpto() == 0) {
-                var firstHistoryPart: Array<SpanOfYears> =
-                    _.filter(preparedList, (y: SpanOfYears) => {return y.YearUpto() != 0});
-                var historyFrom: number = lastHistoryPart.YearFrom();
-                var historyUpto: number = lastHistoryPart.YearFrom();
-
-                return firstHistoryPart.concat([new SpanOfYears(historyFrom, historyUpto)]);
-            }
-            return preparedList;
-        };
-        var toListAccumulator = function(agr: Array<SpanOfYears>, x: number): Array<SpanOfYears> {
-            if (agr.length == 0) {
-                var nextEmptyPartList = [new SpanOfYears(x, 0)];
-
-                return nextEmptyPartList;
-            } else {
-                var firstPart = _.filter(agr, (y:SpanOfYears) => {
-                    return y.YearUpto() != 0
-                });
-
-                var lastPart = _.last(agr);
-
-                var historyFrom = lastPart.YearFrom();
-
-                var nextSpanPartList = nextListEnd(historyFrom, x);
-
-                return firstPart.concat(nextSpanPartList);
-            }
-        };
-        var history: Array<SpanOfYears> = _.reduce(this.milestones, toListAccumulator, []);
-
-        return makeListEnd(history);
+    YearsIntervalList(): Array<SpanOfYears> {
+        return _.toArray(this.milestones);
     }
 }
 
